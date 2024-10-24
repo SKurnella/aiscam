@@ -1,0 +1,63 @@
+from collections import deque
+
+# BFS algorithm function
+def bfs(graph, start_node, goal_node):
+    # Create NODE-LIST and set it to the initial state (start node)
+    node_list = deque([(start_node, [start_node])])  # Stores (current node, path to the node)
+    
+    # Set to keep track of visited nodes
+    visited = set()
+    
+    # Loop until the goal state is found or NODE-LIST is empty
+    while node_list:
+        # Remove the first element from NODE-LIST
+        current_node, path = node_list.popleft()
+        
+        # Check if the goal node is reached
+        if current_node == goal_node:
+            return path
+        
+        # Skip if the current node has already been visited
+        if current_node in visited:
+            continue
+        
+        # Mark the current node as visited
+        visited.add(current_node)
+        
+        # Explore all adjacent nodes (neighbors)
+        for neighbor in graph[current_node]:
+            if neighbor not in visited:
+                # Add the neighbor to the NODE-LIST with the updated path
+                node_list.append((neighbor, path + [neighbor]))
+    
+    # If the goal node is not found
+    return None
+
+# Function to take graph input from the user
+def input_graph():
+    graph = {}
+    num_edges = int(input("Enter the number of edges in the graph: "))
+    
+    for _ in range(num_edges):
+        node, neighbor = input("Enter edge (node neighbor): ").split()
+        if node not in graph:
+            graph[node] = []
+        if neighbor not in graph:
+            graph[neighbor] = []
+        graph[node].append(neighbor)
+        graph[neighbor].append(node)
+    
+    return graph
+
+# Input graph, start, and goal nodes
+graph = input_graph()
+start_node = input("Enter the start node: ")
+goal_node = input("Enter the goal node: ")
+
+# Perform BFS and display the path
+path = bfs(graph, start_node, goal_node)
+
+if path:
+    print("BFS Path from start to goal:", " -> ".join(path))
+else:
+    print("No path found from start to goal.")

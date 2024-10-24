@@ -1,0 +1,100 @@
+# Online Python compiler (interpreter) to run Python online.
+# Write Python 3 code in this online editor and run it.
+import random
+
+def decide_turn():
+    user_choice = input('Do you want to play first (yes/no): ')
+    if user_choice.lower().startswith('y'):
+        return 3, 5, 'user'
+    return 5, 3, 'ai'
+
+def is_position_empty(board, index):
+    return board[index] == 2
+
+def select_random_move(board, available_moves):
+    valid_moves = [move for move in available_moves if is_position_empty(board, move)]
+    if valid_moves:
+        return random.choice(valid_moves)
+    return None
+
+def place_marker(board, marker, position):
+    board[position] = marker
+
+def check_winner(board, marker):
+    winning_combinations = [
+        [1, 2, 3], [4, 5, 6], [7, 8, 9],  # rows
+        [1, 4, 7], [2, 5, 8], [3, 6, 9],  # columns
+        [1, 5, 9], [3, 5, 7]              # diagonals
+    ]
+    return any(all(board[i] == marker for i in combo) for combo in winning_combinations)
+
+def user_move():
+    position = int(input('Enter position: '))
+    if is_position_empty(board, position):
+        return position
+    print('Position already filled. Try again.')
+    return user_move()
+
+def computer_move(user_marker, comp_marker, board):
+    # Check if the AI can win or block the user's winning move
+    for i in range(1, 10):
+        board_copy = board.copy()
+        if is_position_empty(board, i):
+            place_marker(board_copy, comp_marker, i)
+            if check_winner(board_copy, comp_marker):
+                return i
+    for i in range(1, 10):
+        board_copy = board.copy()
+        if is_position_empty(board, i):
+            place_marker(board_copy, user_marker, i)
+            if check_winner(board_copy, user_marker):
+                return i
+    
+    # Check the 1st and 5th elements first
+    if is_position_empty(board, 5):
+        return 5
+    if is_position_empty(board, 1):
+        return 1
+
+    # If 1st and 5th are not empty, check non-corner elements (2, 4, 6, 8)
+    move = select_random_move(board, [2, 4, 6, 8])
+    if move is not None:
+        return move
+
+    # Finally, check corners (1, 3, 7, 9)
+    return select_random_move(board, [1, 3, 7, 9])
+
+def display_board(board):
+    for i in range(1, 10):
+        if i in [3, 6, 9]:
+            print('X' if board[i] == 3 else 'O' if board[i] == 5 else '-')
+        else:
+            print('X' if board[i] == 3 else 'O' if board[i] == 5 else '-', end=' ')
+
+print('Welcome to the game')
+board = [2] * 10
+user_marker, comp_marker, first_player = decide_turn()
+
+current_player = first_player
+
+for turn in range(1, 10):
+    if current_player == 'user':
+        move = user_move()
+        place_marker(board, user_marker, move)
+        display_board(board)
+        print()
+        if check_winner(board, user_marker):
+            print('You won!')
+            break
+        current_player = 'ai'
+    else:
+        move = computer_move(user_marker, comp_marker, board)
+        place_marker(board, comp_marker, move)
+        display_board(board)
+        if check_winner(board, comp_marker):
+            print('You lose!')
+            break
+        current_player = 'user'
+
+if turn >= 9:
+    print('The game is a tie!')
